@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RSVP — Gianluca & Erika</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF7;
+  --bg-alt: #F2F0EB;
+  --text: #2E2E2C;
+  --text-soft: #6B6B66;
+  --accent: #7D8B6A;
+  --accent-light: #A8B496;
+  --gold: #C4A265;
+  --white: #FFFFFF;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Jost', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1A1A18;
+    --bg-alt: #242420;
+    --text: #E8E6E1;
+    --text-soft: #9C9C96;
+    --accent: #9AAD84;
+    --accent-light: #7D8B6A;
+    --gold: #D4B275;
+    --white: #2E2E2C;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1A1A18;
+  --bg-alt: #242420;
+  --text: #E8E6E1;
+  --text-soft: #9C9C96;
+  --accent: #9AAD84;
+  --accent-light: #7D8B6A;
+  --gold: #D4B275;
+  --white: #2E2E2C;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+body {
+  font-family: var(--sans);
+  font-weight: 300;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.7;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.back {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  padding: 1.2rem 1.5rem;
+  font-family: var(--sans);
+  font-size: .75rem;
+  font-weight: 400;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  text-decoration: none;
+  transition: color .3s;
+  z-index: 10;
+}
+.back:hover { color: var(--accent); }
+
+.rsvp-page {
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+
+.section-label {
+  font-family: var(--serif);
+  font-size: .85rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .6rem;
+}
+.section-title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: .5rem;
+}
+.section-text {
+  font-size: .9rem;
+  color: var(--text-soft);
+  margin-bottom: 2rem;
+}
+
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+}
+.rsvp-form label {
+  font-size: .75rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: 400;
+}
+.rsvp-form input,
+.rsvp-form select,
+.rsvp-form textarea {
+  width: 100%;
+  padding: .8rem 1rem;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: 3px;
+  background: var(--bg-alt);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: .9rem;
+  font-weight: 300;
+  margin-top: .3rem;
+  transition: border-color .3s;
+}
+.rsvp-form input:focus,
+.rsvp-form select:focus,
+.rsvp-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.rsvp-form input[readonly] {
+  opacity: .6;
+  cursor: not-allowed;
+}
+.rsvp-form textarea { resize: vertical; min-height: 80px; }
+.rsvp-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.rsvp-btn {
+  margin-top: .5rem;
+  padding: .9rem 2rem;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 3px;
+  font-family: var(--sans);
+  font-size: .85rem;
+  font-weight: 400;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: background .3s;
+  width: 100%;
+}
+.rsvp-btn:hover { background: var(--accent-light); }
+.rsvp-btn:disabled { opacity: .6; cursor: wait; }
+
+.rsvp-success {
+  display: none;
+  padding: 3rem 0;
+}
+.rsvp-success h3 {
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 300;
+  margin-bottom: .8rem;
+  color: var(--accent);
+}
+.rsvp-success p {
+  color: var(--text-soft);
+  font-size: .95rem;
+  line-height: 1.7;
+}
+.rsvp-success a {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-size: .8rem;
+  color: var(--text-soft);
+  text-decoration: none;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  transition: color .3s;
+}
+.rsvp-success a:hover { color: var(--accent); }
+
+@media (max-width: 600px) {
+  .rsvp-row { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back">← Torna al sito</a>
+
+<div class="rsvp-page">
+  <div class="section-label">Gianluca & Erika</div>
+  <h1 class="section-title">Conferma la tua presenza</h1>
+  <p class="section-text">26 Agosto 2027 — Napoli</p>
+
+  <form class="rsvp-form" id="rsvp-form">
+    <div class="rsvp-row">
+      <div>
+        <label>Nome</label>
+        <input type="text" name="nome" required>
+      </div>
+      <div>
+        <label>Cognome</label>
+        <input type="text" name="cognome" required>
+      </div>
+    </div>
+    <div class="rsvp-row">
+      <div>
+        <label>Email</label>
+        <input type="email" name="email" required>
+      </div>
+      <div>
+        <label>Telefono</label>
+        <input type="tel" name="telefono" placeholder="+39...">
+      </div>
+    </div>
+    <div class="rsvp-row">
+      <div>
+        <label>Parteciperai?</label>
+        <select name="partecipa" required>
+          <option value="">Seleziona...</option>
+          <option value="si">Con gioia, ci sarò!</option>
+          <option value="no">Purtroppo non potrò</option>
+        </select>
+      </div>
+      <div>
+        <label>Numero ospiti</label>
+        <input type="number" name="ospiti" min="1" max="5" value="1">
+      </div>
+    </div>
+    <div>
+      <label>Intolleranze / allergie alimentari</label>
+      <textarea name="note" placeholder="Segnala qui eventuali esigenze..."></textarea>
+    </div>
+    <button type="submit" class="rsvp-btn">Conferma la presenza</button>
+  </form>
+
+  <div class="rsvp-success" id="rsvp-success">
+    <h3>Grazie!</h3>
+    <p>La tua conferma è stata registrata.<br>Non vediamo l'ora di festeggiare insieme!</p>
+    <a href="index.html">← Torna al sito</a>
+  </div>
+
+  <!-- Messaggio per accessi non autorizzati -->
+  <div id="rsvp-blocked" style="display:none;padding:3rem 0;text-align:center;">
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1rem;">
+      <circle cx="28" cy="28" r="22"/><path d="M28 18v14"/><circle cx="28" cy="38" r="1" fill="var(--gold)"/>
+    </svg>
+    <h3 style="font-family:var(--serif);font-size:1.8rem;font-weight:300;color:var(--text);margin-bottom:.8rem;">Pagina riservata</h3>
+    <p style="color:var(--text-soft);font-size:.92rem;line-height:1.7;">
+      Questa pagina è riservata agli invitati al matrimonio.<br>
+      Usa il link personalizzato che hai ricevuto via email.
+    </p>
+    <a href="index.html" style="display:inline-block;margin-top:1.5rem;font-size:.8rem;color:var(--text-soft);text-decoration:none;letter-spacing:.06em;text-transform:uppercase;">← Torna al sito</a>
+  </div>
+</div>
+
+<script>
+// ✏️ INCOLLA QUI L'URL DEL DEPLOY APPS SCRIPT
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbws9hjbUw8fkJaj12iCAHUJQay82MFVCc71W3NT6rgUHxDv87FmBHM7seufSEZGOzan/exec';
+
+// ── Controllo accesso: serve il parametro ?e= nell'URL ──
+(function() {
+  const params = new URLSearchParams(location.search);
+  const email = params.get('e');
+
+  if (!email) {
+    // Nessun link personalizzato → blocca il form
+    document.getElementById('rsvp-form').style.display = 'none';
+    document.getElementById('rsvp-blocked').style.display = 'block';
+    return;
+  }
+
+  // Pre-fill dai parametri URL
+  const fields = { n: 'nome', c: 'cognome', e: 'email' };
+  for (const [param, name] of Object.entries(fields)) {
+    const val = params.get(param);
+    if (val) {
+      const input = document.querySelector(`[name="${name}"]`);
+      if (input) { input.value = val; input.readOnly = param === 'e'; }
+    }
+  }
+})();
+
+// ── Submit ──
+document.getElementById('rsvp-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('.rsvp-btn');
+  const originalText = btn.textContent;
+  btn.textContent = 'Invio in corso...';
+  btn.disabled = true;
+
+  const data = Object.fromEntries(new FormData(this));
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(data),
+    });
+    this.style.display = 'none';
+    document.getElementById('rsvp-success').style.display = 'block';
+  } catch (err) {
+    btn.textContent = 'Errore, riprova';
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = originalText; }, 2500);
+  }
+});
+</script>
+
+</body>
+</html>

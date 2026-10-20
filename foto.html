@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Condividi le tue foto — Gianluca & Erika</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF7;
+  --bg-alt: #F2F0EB;
+  --text: #2E2E2C;
+  --text-soft: #6B6B66;
+  --accent: #7D8B6A;
+  --accent-light: #A8B496;
+  --gold: #C4A265;
+  --white: #FFFFFF;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Jost', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1A1A18;
+    --bg-alt: #242420;
+    --text: #E8E6E1;
+    --text-soft: #9C9C96;
+    --accent: #9AAD84;
+    --accent-light: #7D8B6A;
+    --gold: #D4B275;
+    --white: #2E2E2C;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1A1A18;
+  --bg-alt: #242420;
+  --text: #E8E6E1;
+  --text-soft: #9C9C96;
+  --accent: #9AAD84;
+  --accent-light: #7D8B6A;
+  --gold: #D4B275;
+  --white: #2E2E2C;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  font-weight: 300;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.7;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.5rem;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 10% 20%, rgba(196,162,101,.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(125,139,106,.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 0%, rgba(196,162,101,.03) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+.foto-page, .back { position: relative; z-index: 1; }
+
+.back {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  padding: 1.2rem 1.5rem;
+  font-family: var(--sans);
+  font-size: .75rem;
+  font-weight: 400;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  text-decoration: none;
+  transition: color .3s;
+  z-index: 10;
+}
+.back:hover { color: var(--accent); }
+
+.foto-page {
+  width: 100%;
+  max-width: 540px;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.section-label {
+  font-family: var(--serif);
+  font-size: .85rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .6rem;
+}
+.section-title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: .5rem;
+}
+.section-text {
+  font-size: .9rem;
+  color: var(--text-soft);
+  margin-bottom: 2rem;
+  line-height: 1.7;
+}
+
+/* ── Album Google Photos link ── */
+.album-link {
+  display: block;
+  padding: 2rem 2rem 1.8rem;
+  background: linear-gradient(135deg, var(--bg-alt) 0%, rgba(196,162,101,.08) 100%);
+  border: 1px solid rgba(196,162,101,.18);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color .3s, box-shadow .3s, transform .3s;
+  margin-bottom: 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.album-link::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(196,162,101,.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.album-link::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; left: -20px;
+  width: 80px; height: 80px;
+  background: radial-gradient(circle, rgba(125,139,106,.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.album-link:hover {
+  border-color: var(--gold);
+  box-shadow: 0 4px 20px rgba(196,162,101,.12);
+  transform: translateY(-2px);
+}
+.album-link-icon {
+  margin-bottom: .7rem;
+}
+.album-link-icon svg {
+  width: 44px; height: 44px;
+  stroke: var(--gold);
+  fill: none;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.album-link-title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.15rem;
+  letter-spacing: .02em;
+  color: var(--text);
+}
+.album-link-sub {
+  font-size: .78rem;
+  color: var(--text-soft);
+  margin-top: .3rem;
+}
+.album-link-arrow {
+  display: inline-block;
+  margin-top: .6rem;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-family: var(--sans);
+  font-weight: 400;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  color: var(--text-soft);
+  font-size: .75rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(0,0,0,.08);
+}
+
+/* ── Upload form ── */
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+}
+.upload-form label {
+  font-size: .75rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  font-weight: 400;
+}
+.upload-form input[type="text"] {
+  width: 100%;
+  padding: .8rem 1rem;
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: 3px;
+  background: var(--bg-alt);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: .9rem;
+  font-weight: 300;
+  margin-top: .3rem;
+  transition: border-color .3s;
+}
+.upload-form input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ── Drop zone ── */
+.drop-zone {
+  border: 2px dashed rgba(125,139,106,.25);
+  border-radius: 12px;
+  padding: 2.8rem 1.5rem 2.4rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .3s, background .3s, box-shadow .3s;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--bg-alt) 0%, rgba(125,139,106,.04) 100%);
+}
+.drop-zone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 85%, rgba(125,139,106,.06) 0%, transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba(196,162,101,.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--accent);
+  background: linear-gradient(160deg, var(--bg-alt) 0%, rgba(125,139,106,.08) 100%);
+  box-shadow: 0 4px 16px rgba(125,139,106,.08);
+}
+.drop-zone-icon {
+  margin-bottom: .8rem;
+  position: relative;
+}
+.drop-zone-icon svg {
+  width: 52px; height: 52px;
+  stroke: var(--accent);
+  fill: none;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .6;
+  transition: opacity .3s;
+}
+.drop-zone:hover .drop-zone-icon svg {
+  opacity: .9;
+}
+.drop-zone-text {
+  font-size: .85rem;
+  color: var(--text-soft);
+  line-height: 1.6;
+  position: relative;
+}
+.drop-zone-text strong {
+  color: var(--accent);
+  font-weight: 400;
+}
+.drop-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* ── Preview thumbnails ── */
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: .5rem;
+  margin-top: 1rem;
+}
+.preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--bg-alt);
+}
+.preview-item img, .preview-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.preview-item .remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.6);
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.preview-item .file-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2px 4px;
+  background: rgba(0,0,0,.5);
+  color: #fff;
+  font-size: .6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Progress ── */
+.progress-bar {
+  display: none;
+  height: 4px;
+  background: var(--bg-alt);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: .5rem;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width .3s;
+  border-radius: 2px;
+}
+.upload-status {
+  font-size: .8rem;
+  color: var(--text-soft);
+  margin-top: .4rem;
+  min-height: 1.2em;
+}
+
+.upload-btn {
+  margin-top: .5rem;
+  padding: .9rem 2rem;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 3px;
+  font-family: var(--sans);
+  font-size: .85rem;
+  font-weight: 400;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: background .3s;
+  width: 100%;
+}
+.upload-btn:hover { background: var(--accent-light); }
+.upload-btn:disabled { opacity: .6; cursor: wait; }
+
+/* ── Success ── */
+.upload-success {
+  display: none;
+  padding: 3rem 0;
+}
+.upload-success h3 {
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 300;
+  margin-bottom: .8rem;
+  color: var(--accent);
+}
+.upload-success p {
+  color: var(--text-soft);
+  font-size: .95rem;
+  line-height: 1.7;
+}
+.upload-success a, .upload-again {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-size: .8rem;
+  color: var(--text-soft);
+  text-decoration: none;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  transition: color .3s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--sans);
+}
+.upload-success a:hover, .upload-again:hover { color: var(--accent); }
+
+.file-limit {
+  font-size: .72rem;
+  color: var(--text-soft);
+  margin-top: .3rem;
+}
+
+@media (max-width: 600px) {
+  .preview-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back">&larr; Torna al sito</a>
+
+<div class="foto-page">
+  <div class="section-label">Gianluca & Erika</div>
+  <h1 class="section-title">Condividi i tuoi ricordi</h1>
+  <p class="section-text">Hai scattato foto o girato video durante la giornata?<br>Condividili con noi — ogni momento conta!</p>
+
+  <!-- Album Google Photos -->
+  <a href="https://photos.app.goo.gl/7UH2zweCEwRRCMhNA" target="_blank" rel="noopener" class="album-link" id="album-link">
+    <div class="album-link-icon">
+      <svg viewBox="0 0 48 48"><rect x="6" y="10" width="36" height="28" rx="3"/><circle cx="24" cy="24" r="7"/><circle cx="24" cy="24" r="3.5"/><circle cx="35" cy="15" r="1.5" fill="var(--gold)" stroke="none"/><path d="M6 16h5l3-4h20l3 4h5"/></svg>
+    </div>
+    <div class="album-link-title">Apri l'album condiviso su Google Photos</div>
+    <div class="album-link-sub">Se hai un account Google, puoi aggiungere foto e video direttamente</div>
+    <div class="album-link-arrow">Apri album →</div>
+  </a>
+
+  <div class="divider">oppure caricale qui</div>
+
+  <!-- Upload Form -->
+  <form class="upload-form" id="upload-form">
+    <div>
+      <label>Il tuo nome</label>
+      <input type="text" name="nome" id="upload-nome" required placeholder="Es. Marco Rossi">
+    </div>
+
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" multiple accept="image/*,video/*">
+      <div class="drop-zone-icon">
+        <svg viewBox="0 0 56 56"><path d="M28 38V18M28 18l-8 8M28 18l8 8"/><rect x="8" y="12" width="40" height="32" rx="4"/><path d="M18 44v2a3 3 0 003 3h14a3 3 0 003-3v-2"/><path d="M8 34l9-9 6 6 10-10 15 13" opacity=".3"/></svg>
+      </div>
+      <div class="drop-zone-text">
+        <strong>Tocca per scegliere</strong> o trascina qui<br>
+        foto e video
+      </div>
+    </div>
+    <div class="file-limit">Max 10 MB per file — formati: JPG, PNG, HEIC, MP4, MOV</div>
+
+    <div class="preview-grid" id="preview-grid"></div>
+
+    <div class="progress-bar" id="progress-bar">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="upload-status" id="upload-status"></div>
+
+    <button type="submit" class="upload-btn" id="upload-btn" disabled>Carica foto</button>
+  </form>
+
+  <div class="upload-success" id="upload-success">
+    <div style="margin-bottom:1rem;">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="28" cy="28" r="22"/><path d="M18 28l7 7 13-13"/></svg>
+    </div>
+    <h3>Grazie!</h3>
+    <p>Le tue foto sono state caricate con successo.<br>Gli sposi le troveranno nel loro archivio!</p>
+    <button class="upload-again" onclick="resetForm()">Carica altre foto</button>
+    <br>
+    <a href="index.html">&larr; Torna al sito</a>
+  </div>
+</div>
+
+<script>
+// ✏️ URL APPS SCRIPT (stesso del RSVP)
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbws9hjbUw8fkJaj12iCAHUJQay82MFVCc71W3NT6rgUHxDv87FmBHM7seufSEZGOzan/exec';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_TYPES = ['image/jpeg','image/png','image/heic','image/heif','image/webp','video/mp4','video/quicktime','video/mov'];
+
+let selectedFiles = [];
+
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const previewGrid = document.getElementById('preview-grid');
+const uploadBtn = document.getElementById('upload-btn');
+const progressBar = document.getElementById('progress-bar');
+const progressFill = document.getElementById('progress-fill');
+const uploadStatus = document.getElementById('upload-status');
+const form = document.getElementById('upload-form');
+
+// ── Pre-fill nome da URL params ──
+(function() {
+  var params = new URLSearchParams(location.search);
+  var n = params.get('n');
+  var c = params.get('c');
+  if (n || c) {
+    document.getElementById('upload-nome').value = [n, c].filter(Boolean).join(' ');
+  }
+})();
+
+// ── Drag & drop ──
+dropZone.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', function() {
+  dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', function() {
+  handleFiles(fileInput.files);
+  fileInput.value = '';
+});
+
+function handleFiles(fileList) {
+  for (var i = 0; i < fileList.length; i++) {
+    var f = fileList[i];
+    if (f.size > MAX_FILE_SIZE) {
+      uploadStatus.textContent = f.name + ' supera il limite di 10 MB, saltato.';
+      continue;
+    }
+    if (!ALLOWED_TYPES.includes(f.type) && !f.type.startsWith('image/') && !f.type.startsWith('video/')) {
+      uploadStatus.textContent = f.name + ' — formato non supportato.';
+      continue;
+    }
+    selectedFiles.push(f);
+    addPreview(f, selectedFiles.length - 1);
+  }
+  uploadBtn.disabled = selectedFiles.length === 0;
+  uploadStatus.textContent = selectedFiles.length > 0
+    ? selectedFiles.length + ' file selezionat' + (selectedFiles.length === 1 ? 'o' : 'i')
+    : '';
+}
+
+function addPreview(file, index) {
+  var div = document.createElement('div');
+  div.className = 'preview-item';
+  div.dataset.index = index;
+
+  if (file.type.startsWith('video/')) {
+    var vid = document.createElement('video');
+    vid.src = URL.createObjectURL(file);
+    vid.muted = true;
+    div.appendChild(vid);
+  } else {
+    var img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    div.appendChild(img);
+  }
+
+  var nameSpan = document.createElement('div');
+  nameSpan.className = 'file-name';
+  nameSpan.textContent = file.name;
+  div.appendChild(nameSpan);
+
+  var removeBtn = document.createElement('button');
+  removeBtn.className = 'remove-btn';
+  removeBtn.type = 'button';
+  removeBtn.textContent = '×';
+  removeBtn.onclick = function() {
+    selectedFiles[index] = null;
+    div.remove();
+    var active = selectedFiles.filter(Boolean);
+    uploadBtn.disabled = active.length === 0;
+    uploadStatus.textContent = active.length > 0
+      ? active.length + ' file selezionat' + (active.length === 1 ? 'o' : 'i')
+      : '';
+  };
+  div.appendChild(removeBtn);
+
+  previewGrid.appendChild(div);
+}
+
+// ── Upload ──
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  var nome = document.getElementById('upload-nome').value.trim();
+  if (!nome) return;
+
+  var files = selectedFiles.filter(Boolean);
+  if (files.length === 0) return;
+
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = 'Caricamento...';
+  progressBar.style.display = 'block';
+
+  var done = 0;
+  var errors = 0;
+
+  for (var i = 0; i < files.length; i++) {
+    uploadStatus.textContent = 'Caricamento ' + (i + 1) + ' di ' + files.length + '...';
+    progressFill.style.width = ((i / files.length) * 100) + '%';
+
+    try {
+      var base64 = await fileToBase64(files[i]);
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          mode: 'upload',
+          file: base64,
+          filename: files[i].name,
+          mimeType: files[i].type,
+          nome: nome
+        })
+      });
+      done++;
+    } catch (err) {
+      errors++;
+    }
+  }
+
+  progressFill.style.width = '100%';
+
+  if (done > 0) {
+    form.style.display = 'none';
+    document.getElementById('upload-success').style.display = 'block';
+  } else {
+    uploadStatus.textContent = 'Errore durante il caricamento. Riprova.';
+    uploadBtn.textContent = 'Carica foto';
+    uploadBtn.disabled = false;
+  }
+});
+
+function fileToBase64(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function() {
+      // Rimuovi il prefisso "data:...;base64,"
+      var result = reader.result.split(',')[1];
+      resolve(result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function resetForm() {
+  selectedFiles = [];
+  previewGrid.innerHTML = '';
+  progressBar.style.display = 'none';
+  progressFill.style.width = '0%';
+  uploadStatus.textContent = '';
+  uploadBtn.textContent = 'Carica foto';
+  uploadBtn.disabled = true;
+  form.style.display = 'flex';
+  document.getElementById('upload-success').style.display = 'none';
+}
+</script>
+
+</body>
+</html>
