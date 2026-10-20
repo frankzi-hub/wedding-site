@@ -30,7 +30,7 @@
 // ── CONFIGURAZIONE (✏️ PERSONALIZZA QUESTI VALORI) ──────────
 
 const CONFIG = {
-  URL_SITO: 'https://tuosito.it',           // URL dove hosti il sito
+  URL_SITO: 'https://gianlucaederikasposi.it',  // URL dove hosti il sito
   NOME_SPOSI: 'Gianluca & Erika',
   DATA_MATRIMONIO: '26 Agosto 2027',
   LUOGO_CERIMONIA: 'Basilica di Capodimonte, Napoli',
@@ -38,6 +38,7 @@ const CONFIG = {
   FOGLIO_INVITATI: 'Invitati',
   FOGLIO_RISPOSTE: 'Risposte',
   CARTELLA_FOTO: 'Foto Matrimonio',         // Nome cartella in Google Drive
+  ALBUM_GOOGLE_PHOTOS: 'Matrimonio Gianluca ed Erika',  // Nome album su Google Photos
 };
 
 
@@ -146,18 +147,110 @@ function gestisciUploadFoto(data) {
   const nomeOspite = (data.nome || 'Anonimo').trim();
   const cartellaOspite = getOrCreateFolder(nomeOspite, cartellaPrincipale);
 
-  // Decodifica base64 e salva
+  // Decodifica base64 e salva su Drive
   const decoded = Utilities.base64Decode(data.file);
   const blob = Utilities.newBlob(decoded, data.mimeType || 'image/jpeg', data.filename);
   const file = cartellaOspite.createFile(blob);
+
+  // ── Copia automatica su Google Photos ──
+  let photosStatus = 'skipped';
+  try {
+    photosStatus = uploadToGooglePhotos(blob, data.filename);
+  } catch (err) {
+    photosStatus = 'error: ' + err.toString();
+  }
 
   return ContentService
     .createTextOutput(JSON.stringify({
       status: 'ok',
       fileId: file.getId(),
-      fileName: file.getName()
+      fileName: file.getName(),
+      googlePhotos: photosStatus
     }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+// ── GOOGLE PHOTOS: Upload automatico nell'album ────────────
+
+function uploadToGooglePhotos(blob, filename) {
+  const token = ScriptApp.getOAuthToken();
+
+  // Step 1: Trova l'album per nome (cerca una sola volta, poi usa cache)
+  const albumId = getAlbumIdByName(CONFIG.ALBUM_GOOGLE_PHOTOS, token);
+  if (!albumId) return 'album_not_found';
+
+  // Step 2: Upload dei bytes raw
+  const uploadRes = UrlFetchApp.fetch('https://photoslibrary.googleapis.com/v1/uploads', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/octet-stream',
+      'X-Goog-Upload-Protocol': 'raw',
+      'X-Goog-Upload-File-Name': filename,
+    },
+    payload: blob.getBytes(),
+    muteHttpExceptions: true,
+  });
+
+  if (uploadRes.getResponseCode() !== 200) {
+    return 'upload_failed_' + uploadRes.getResponseCode();
+  }
+
+  const uploadToken = uploadRes.getContentText();
+
+  // Step 3: Crea il media item nell'album
+  const createRes = UrlFetchApp.fetch('https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+    },
+    payload: JSON.stringify({
+      albumId: albumId,
+      newMediaItems: [{
+        simpleMediaItem: {
+          uploadToken: uploadToken,
+          fileName: filename,
+        }
+      }]
+    }),
+    muteHttpExceptions: true,
+  });
+
+  if (createRes.getResponseCode() !== 200) {
+    return 'create_failed_' + createRes.getResponseCode();
+  }
+
+  return 'ok';
+}
+
+
+function getAlbumIdByName(albumName, token) {
+  // Cerca tra gli album esistenti
+  let nextPageToken = '';
+  do {
+    const url = 'https://photoslibrary.googleapis.com/v1/albums?pageSize=50'
+      + (nextPageToken ? '&pageToken=' + nextPageToken : '');
+
+    const res = UrlFetchApp.fetch(url, {
+      headers: { 'Authorization': 'Bearer ' + token },
+      muteHttpExceptions: true,
+    });
+
+    if (res.getResponseCode() !== 200) return null;
+
+    const json = JSON.parse(res.getContentText());
+    const albums = json.albums || [];
+
+    for (const album of albums) {
+      if (album.title === albumName) return album.id;
+    }
+
+    nextPageToken = json.nextPageToken || '';
+  } while (nextPageToken);
+
+  return null;
 }
 
 
@@ -222,8 +315,10 @@ function inviaInviti() {
 
       MailApp.sendEmail({
         to: email,
-        subject: `💍 ${CONFIG.NOME_SPOSI} — Siete invitati al nostro matrimonio`,
+        subject: `${CONFIG.NOME_SPOSI} - Siete invitati al nostro matrimonio`,
         htmlBody: html,
+        name: CONFIG.NOME_SPOSI,        // Il mittente appare come "Gianluca & Erika"
+        replyTo: email,                  // Reply va all'invitato stesso (evita bounce)
       });
 
       // Aggiorna stato e data invio
@@ -279,8 +374,9 @@ function inviaSolleciti() {
 
       MailApp.sendEmail({
         to: email,
-        subject: `📩 ${CONFIG.NOME_SPOSI} — Conferma la tua presenza`,
+        subject: `${CONFIG.NOME_SPOSI} - Conferma la tua presenza`,
         htmlBody: html,
+        name: CONFIG.NOME_SPOSI,
       });
       inviati++;
     } catch (err) { /* skip */ }
