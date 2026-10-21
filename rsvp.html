@@ -152,6 +152,8 @@ body {
   cursor: not-allowed;
 }
 .rsvp-form textarea { resize: vertical; min-height: 80px; }
+.label-note { text-transform: none; letter-spacing: 0; opacity: .8; }
+#rsvp-persone[hidden] { display: none; }
 .rsvp-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -274,30 +276,34 @@ body::before {
         <input type="tel" name="telefono" placeholder="+39...">
       </div>
     </div>
-    <div class="rsvp-row">
+    <div>
+      <label>Parteciperai?</label>
+      <select name="partecipa" id="partecipa" required>
+        <option value="">Seleziona...</option>
+        <option value="si">Con gioia, ci sarò!</option>
+        <option value="no">Purtroppo non potrò</option>
+      </select>
+    </div>
+    <div class="rsvp-row" id="rsvp-persone">
       <div>
-        <label>Parteciperai?</label>
-        <select name="partecipa" required>
-          <option value="">Seleziona...</option>
-          <option value="si">Con gioia, ci sarò!</option>
-          <option value="no">Purtroppo non potrò</option>
-        </select>
+        <label for="ospiti">Adulti</label>
+        <input type="number" name="ospiti" id="ospiti" min="1" max="10" value="1" inputmode="numeric">
       </div>
       <div>
-        <label>Numero ospiti</label>
-        <input type="number" name="ospiti" min="1" max="5" value="1">
+        <label for="bambini">Bambini <span class="label-note">(menù bambini)</span></label>
+        <input type="number" name="bambini" id="bambini" min="0" max="10" value="0" inputmode="numeric">
       </div>
     </div>
     <div>
       <label>Intolleranze / allergie alimentari</label>
       <textarea name="note" placeholder="Segnala qui eventuali esigenze..."></textarea>
     </div>
-    <button type="submit" class="rsvp-btn">Conferma la presenza</button>
+    <button type="submit" class="rsvp-btn">Invia</button>
   </form>
 
   <div class="rsvp-success" id="rsvp-success">
     <h3>Grazie!</h3>
-    <p>La tua conferma è stata registrata.<br>Non vediamo l'ora di festeggiare insieme!</p>
+    <p id="rsvp-success-text">La tua risposta è stata registrata.<br>Non vediamo l'ora di festeggiare insieme!</p>
     <a href="index.html">← Torna al sito</a>
   </div>
 
@@ -342,6 +348,15 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3fZrpvNVoo4wNNishj
   }
 })();
 
+// ── Adulti/bambini servono solo se si partecipa ──
+(function() {
+  const sel = document.getElementById('partecipa');
+  const box = document.getElementById('rsvp-persone');
+  function aggiorna() { box.hidden = sel.value === 'no'; }
+  sel.addEventListener('change', aggiorna);
+  aggiorna();
+})();
+
 // ── Submit ──
 document.getElementById('rsvp-form').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -351,6 +366,7 @@ document.getElementById('rsvp-form').addEventListener('submit', async function(e
   btn.disabled = true;
 
   const data = Object.fromEntries(new FormData(this));
+  if (data.partecipa === 'no') { data.ospiti = 0; data.bambini = 0; }
 
   try {
     await fetch(SCRIPT_URL, {
@@ -360,6 +376,10 @@ document.getElementById('rsvp-form').addEventListener('submit', async function(e
       body: JSON.stringify(data),
     });
     this.style.display = 'none';
+    if (data.partecipa === 'no') {
+      document.getElementById('rsvp-success-text').innerHTML =
+        'Ci dispiace che non potrai esserci.<br>Grazie per avercelo fatto sapere.';
+    }
     document.getElementById('rsvp-success').style.display = 'block';
   } catch (err) {
     btn.textContent = 'Errore, riprova';
