@@ -6,41 +6,44 @@
 <title>Condividi le tue foto — Gianluca & Erika</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
+/* ═══ PALETTE "INVITI" — colori campionati da "tema colori.jpeg" ═══
+   ceralacca terracotta #904829 · verde salvia (nastro) #ADA284 · verde inchiostro #5F6B58
+   carta avorio #E5D7C6 · travertino #D3B89B · neutri caldi derivati                     */
 :root {
-  --bg: #FAFAF7;
-  --bg-alt: #F2F0EB;
-  --text: #2E2E2C;
-  --text-soft: #6B6B66;
-  --accent: #7D8B6A;
-  --accent-light: #A8B496;
-  --gold: #C4A265;
+  --bg: #F6EFE5;
+  --bg-alt: #E5D7C6;
+  --text: #332B24;
+  --text-soft: #6E6153;
+  --accent: #5F6B58;
+  --accent-light: #ADA284;
+  --gold: #904829;
   --white: #FFFFFF;
   --serif: 'Cormorant Garamond', Georgia, serif;
   --sans: 'Jost', system-ui, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1A1A18;
-    --bg-alt: #242420;
-    --text: #E8E6E1;
-    --text-soft: #9C9C96;
-    --accent: #9AAD84;
-    --accent-light: #7D8B6A;
-    --gold: #D4B275;
-    --white: #2E2E2C;
+    --bg: #262019;
+    --bg-alt: #312A22;
+    --text: #EDE4D8;
+    --text-soft: #BFB3A1;
+    --accent: #ADA284;
+    --accent-light: #877E5F;
+    --gold: #C98A68;
+    --white: #262019;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #1A1A18;
-  --bg-alt: #242420;
-  --text: #E8E6E1;
-  --text-soft: #9C9C96;
-  --accent: #9AAD84;
-  --accent-light: #7D8B6A;
-  --gold: #D4B275;
-  --white: #2E2E2C;
+  --bg: #262019;
+  --bg-alt: #312A22;
+  --text: #EDE4D8;
+  --text-soft: #BFB3A1;
+  --accent: #ADA284;
+  --accent-light: #877E5F;
+  --gold: #C98A68;
+  --white: #262019;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -65,9 +68,9 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse at 10% 20%, rgba(196,162,101,.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 90% 80%, rgba(125,139,106,.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 0%, rgba(196,162,101,.03) 0%, transparent 40%);
+    radial-gradient(ellipse at 10% 20%, rgba(144,72,41,.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(95,107,88,.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 0%, rgba(144,72,41,.03) 0%, transparent 40%);
   pointer-events: none;
   z-index: 0;
 }
@@ -114,7 +117,7 @@ body::before {
   margin-bottom: .5rem;
 }
 .section-text {
-  font-size: .9rem;
+  font-size: 1.04rem;
   color: var(--text-soft);
   margin-bottom: 2rem;
   line-height: 1.7;
@@ -124,8 +127,8 @@ body::before {
 .album-link {
   display: block;
   padding: 2rem 2rem 1.8rem;
-  background: linear-gradient(135deg, var(--bg-alt) 0%, rgba(196,162,101,.08) 100%);
-  border: 1px solid rgba(196,162,101,.18);
+  background: linear-gradient(135deg, var(--bg-alt) 0%, rgba(144,72,41,.08) 100%);
+  border: 1px solid rgba(144,72,41,.18);
   border-radius: 10px;
   text-decoration: none;
   color: var(--text);
@@ -139,7 +142,7 @@ body::before {
   position: absolute;
   top: -30px; right: -30px;
   width: 120px; height: 120px;
-  background: radial-gradient(circle, rgba(196,162,101,.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(144,72,41,.1) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -148,13 +151,13 @@ body::before {
   position: absolute;
   bottom: -20px; left: -20px;
   width: 80px; height: 80px;
-  background: radial-gradient(circle, rgba(125,139,106,.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(95,107,88,.08) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
 .album-link:hover {
   border-color: var(--gold);
-  box-shadow: 0 4px 20px rgba(196,162,101,.12);
+  box-shadow: 0 4px 20px rgba(144,72,41,.12);
   transform: translateY(-2px);
 }
 .album-link-icon {
@@ -242,7 +245,7 @@ body::before {
 
 /* ── Drop zone ── */
 .drop-zone {
-  border: 2px dashed rgba(125,139,106,.25);
+  border: 2px dashed rgba(95,107,88,.25);
   border-radius: 12px;
   padding: 2.8rem 1.5rem 2.4rem;
   text-align: center;
@@ -250,21 +253,21 @@ body::before {
   transition: border-color .3s, background .3s, box-shadow .3s;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(160deg, var(--bg-alt) 0%, rgba(125,139,106,.04) 100%);
+  background: linear-gradient(160deg, var(--bg-alt) 0%, rgba(95,107,88,.04) 100%);
 }
 .drop-zone::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 15% 85%, rgba(125,139,106,.06) 0%, transparent 50%),
-    radial-gradient(circle at 85% 15%, rgba(196,162,101,.05) 0%, transparent 50%);
+    radial-gradient(circle at 15% 85%, rgba(95,107,88,.06) 0%, transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba(144,72,41,.05) 0%, transparent 50%);
   pointer-events: none;
 }
 .drop-zone:hover, .drop-zone.dragover {
   border-color: var(--accent);
-  background: linear-gradient(160deg, var(--bg-alt) 0%, rgba(125,139,106,.08) 100%);
-  box-shadow: 0 4px 16px rgba(125,139,106,.08);
+  background: linear-gradient(160deg, var(--bg-alt) 0%, rgba(95,107,88,.08) 100%);
+  box-shadow: 0 4px 16px rgba(95,107,88,.08);
 }
 .drop-zone-icon {
   margin-bottom: .8rem;
@@ -406,7 +409,7 @@ body::before {
 }
 .upload-success p {
   color: var(--text-soft);
-  font-size: .95rem;
+  font-size: 1.09rem;
   line-height: 1.7;
 }
 .upload-success a, .upload-again {
@@ -436,6 +439,39 @@ body::before {
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
+}
+
+/* v1.0 — tipografia coerente con la home */
+:root { --display: 'Playfair Display', 'Cormorant Garamond', Georgia, serif; }
+.section-title, .rsvp-success h3, .upload-success h3, .album-link-title { font-family: var(--display); font-weight: 400; }
+.section-label { font-family: var(--sans); font-size: .68rem; font-weight: 400; letter-spacing: .3em; }
+
+/* ═══ SFONDO: FOTO REALE (sfondo.jpg) ═══ */
+:root {
+  --bg: #E5D7C6;                         /* menu e pulsanti traslucidi prendono questo tono */
+  --bg-alt: rgba(245, 237, 227, .62);     /* pannelli e schede chiari sopra la foto */
+  --text-soft: #5E5246;
+}
+/* Nessun velo sopra la sabbia: la foto resta piena e chiara in TUTTI E DUE i temi.
+   Di conseguenza anche in tema scuro il testo sopra la sabbia resta scuro.        */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #E5D7C6; --bg-alt: rgba(245, 237, 227, .62); --text: #332B24; --text-soft: #5E5246; --gold: #904829; --accent: #5F6B58; --accent-light: #ADA284; }
+}
+:root[data-theme="dark"] { --bg: #E5D7C6; --bg-alt: rgba(245, 237, 227, .62); --text: #332B24; --text-soft: #5E5246; --gold: #904829; --accent: #5F6B58; --accent-light: #ADA284; }
+html, body { height: auto; min-height: 100%; }
+body { background: #E8DCCB; }
+/* La foto resta ferma mentre la pagina scorre (funziona anche su iPhone) */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: url('sfondo.jpg') center / cover no-repeat;
+}
+.section-label { color: #814022; }
+/* Velo solo dietro al blocco di testo: una carta chiara appoggiata sulla sabbia */
+.foto-page {
+  background: rgba(248, 244, 237, .66);
+  border-radius: 8px;
+  box-shadow: 0 2px 28px rgba(58, 46, 36, .10);
+  padding: 2.8rem 1.8rem 3rem;
 }
 </style>
 </head>
