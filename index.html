@@ -958,6 +958,19 @@ section:not(.slideshow) {
 .rsvp .rsvp-btn { background: #F6EFE5; color: #7A3D27; font-weight: 500; }
 .rsvp .rsvp-btn:hover { background: #E8D9C2; }
 
+/* Telefono: il nome si distribuisce su tre righe con la & al centro, invece di
+   spezzarsi in due lasciando la & attaccata a "Gianluca". A 390px di larghezza
+   il nome su una riga sola ci sta per appena 1px, quindi qui non si rischia. */
+@media (max-width: 430px) {
+  .hero-names, .splash-names {
+    display: flex; flex-direction: column; align-items: center;
+    line-height: 1.05;
+  }
+  .hero-names em, .splash-names em {
+    padding: 0; margin: .1em 0; font-size: .66em; line-height: 1;
+  }
+}
+
 /* Movimento ridotto: il segno risulta gia' tracciato e i testi subito visibili */
 @media (prefers-reduced-motion: reduce) {
   .splash-linea path { stroke-dashoffset: 0; }
@@ -1000,7 +1013,7 @@ section:not(.slideshow) {
       <span class="splash-punto"></span>
     </div>
     <div class="splash-date">26 · 08 · 2027</div>
-    <div class="splash-names">Gianluca <em>&amp;</em> Erika</div>
+    <div class="splash-names"><span>Gianluca</span> <em>&amp;</em> <span>Erika</span></div>
     <svg class="splash-flourish" viewBox="0 0 120 20" fill="none" aria-hidden="true">
       <path d="M0 10 C20 10 25 2 40 2 C50 2 52 10 60 10 C68 10 70 2 80 2 C95 2 100 10 120 10" stroke="currentColor" stroke-width="1"/>
       <circle cx="60" cy="10" r="2.5" fill="currentColor"/>
@@ -1049,7 +1062,7 @@ section:not(.slideshow) {
   <div class="hero-img" id="hero-bg"></div>
 
   <div class="hero-date">26 Agosto 2027</div>
-  <h1 class="hero-names">Gianluca <em>&</em> Erika</h1>
+  <h1 class="hero-names"><span>Gianluca</span> <em>&</em> <span>Erika</span></h1>
   <p class="hero-sub">Ci sposiamo</p>
 
   <!-- Fregio decorativo -->
@@ -1226,7 +1239,9 @@ section:not(.slideshow) {
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3fZrpvNVoo4wNNishjT-HMC6FFHxmwB2rcIox9_eFEHkBp0T723ng_p5j5KUUhTmm/exec';
 const DATA_MATRIMONIO = '2027-08-26T14:30:00+02:00';
 
-// Galleria: cartella e nomi dei file (nell'ordine in cui devono comparire)
+// Galleria: le foto vengono lette automaticamente dalla cartella del repository GitHub
+// (basta caricarle lì, in ordine alfabetico). L'elenco qui sotto si usa solo se GitHub non risponde.
+const REPO_GITHUB = 'frankzi-hub/wedding-site';
 const CARTELLA_GALLERIA = 'foto galleria/';
 const FOTO_GALLERIA = [
   'WhatsApp Image 2026-10-21 at 11.06.07.jpeg',
@@ -1405,12 +1420,34 @@ const FOTO_GALLERIA = [
 })();
 
 // ── Galleria a tutta pagina ──
+// Elenco foto: chiesto a GitHub; se non risponde entro 4 s si usa FOTO_GALLERIA
 (function() {
+  const IMMAGINE = /\.(jpe?g|png|webp|gif|avif)$/i;
+  const api = 'https://api.github.com/repos/' + REPO_GITHUB + '/contents/' +
+    encodeURIComponent(CARTELLA_GALLERIA.replace(/\/$/, ''));
+  const ctrl = window.AbortController ? new AbortController() : null;
+  const scadenza = setTimeout(() => ctrl && ctrl.abort(), 4000);
+  fetch(api, { signal: ctrl ? ctrl.signal : undefined, headers: { Accept: 'application/vnd.github+json' } })
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('GitHub ' + r.status)))
+    .then(files => {
+      const nomi = (Array.isArray(files) ? files : [])
+        .filter(f => f.type === 'file' && IMMAGINE.test(f.name))
+        .map(f => f.name)
+        .sort((a, b) => a.localeCompare(b, 'it', { numeric: true }));
+      avviaGalleria(nomi.length ? nomi : FOTO_GALLERIA);
+    })
+    .catch(() => avviaGalleria(FOTO_GALLERIA))
+    .finally(() => clearTimeout(scadenza));
+})();
+
+function avviaGalleria(FOTO) {
   const root = document.getElementById('galleria');
+  if (root.dataset.avviata) return;
+  root.dataset.avviata = '1';
   const slidesBox = root.querySelector('.slides');
   const dotsBox = root.querySelector('.slideshow-dots');
-  const tot = FOTO_GALLERIA.length;
-  FOTO_GALLERIA.forEach((nome, n) => {
+  const tot = FOTO.length;
+  FOTO.forEach((nome, n) => {
     const src = encodeURI(CARTELLA_GALLERIA + nome);
     const fig = document.createElement('figure');
     fig.className = 'slide' + (n === 0 ? ' active' : '');
@@ -1510,7 +1547,7 @@ const FOTO_GALLERIA = [
   }, { threshold: [0, 0.35, 0.6] });
   io.observe(root);
   document.addEventListener('visibilitychange', schedule);
-})();
+}
 
 // ── Benvenuto ──
 (function() {
@@ -1563,9 +1600,9 @@ const FOTO_GALLERIA = [
       if (p) p.then(function() {
         let v = 0;
         salita = setInterval(function() {
-          v = Math.min(.32, v + .012);
+          v = Math.min(.38, v + .014);
           vento.volume = v;
-          if (v >= .32) { clearInterval(salita); salita = null; }
+          if (v >= .38) { clearInterval(salita); salita = null; }
         }, 70);
       }).catch(function() {});
     }
