@@ -504,21 +504,68 @@ section {
 /* ── FOOTER ── */
 footer {
   text-align: center;
-  padding: 4rem 1.5rem;
+  padding: 5.5rem 1.5rem 4.5rem;
   border-top: 1px solid rgba(0,0,0,.05);
+  /* Chiude la pagina con un velo di carta avorio invece di un taglio netto */
+  background: linear-gradient(180deg, transparent, var(--bg-alt));
+}
+/* Le due linee dello splash, qui come chiusura: partono separate, si incontrano
+   e proseguono unite. Riprendono le stesse curve e gli stessi colori, ma si
+   animano allo scroll (classe .in) invece che a tempo, e stanno dentro il
+   pannello invece di attraversare lo schermo. */
+.footer-linea-wrap {
+  position: relative;
+  width: 100%;
+  height: clamp(68px, 13vw, 104px);
+  margin: .2rem auto 1.4rem;
+}
+.footer-linea { display: block; width: 100%; height: 100%; }
+.js .footer-linea path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.footer-punto {
+  position: absolute; left: 43.08%; top: 75%;
+  width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%; background: #904829;
+}
+.js .footer-punto { transform: scale(0); opacity: 0; }
+/* 0 -> 1.6s le due linee si incontrano, poi il punto, poi la linea sola */
+.js .footer-linea-wrap.in .l-verde,
+.js .footer-linea-wrap.in .l-terracotta { animation: traccia 1.6s cubic-bezier(.45,.05,.35,1) forwards; }
+.js .footer-linea-wrap.in .footer-punto { animation: puntoIn .5s cubic-bezier(.34,1.3,.64,1) 1.6s forwards; }
+.js .footer-linea-wrap.in .l-fusa { animation: traccia 1.6s cubic-bezier(.4,0,.5,1) 2s forwards; }
+footer .footer-intro {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.32rem, 5.44vw, 3.2rem);
+  line-height: 1.2;
+  color: var(--gold);
+  margin-bottom: .9rem;
 }
 footer .footer-names {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(2.1rem, 6vw, 3.4rem);
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  color: var(--text);
+}
+footer .footer-names em {
   font-family: var(--serif);
-  font-size: 1.6rem;
-  font-weight: 300;
   font-style: italic;
-  color: var(--accent);
+  font-weight: 300;
+  font-size: 1.12em;
+  padding: 0 .08em;
+  color: var(--gold);
 }
-footer p {
-  font-size: .75rem;
-  color: var(--text-soft);
-  margin-top: .5rem;
+footer .footer-date {
+  margin-top: 1.2rem;
+  font-family: var(--sans);
+  font-size: .82rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--gold);
 }
+footer .footer-date span { padding: 0 .35em; opacity: .6; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 600px) {
@@ -971,10 +1018,39 @@ section:not(.slideshow) {
   }
 }
 
+/* ── FIRMA DI CHIUSURA SOPRA LA SABBIA ──
+   Il footer non e' una <section>, quindi non riceveva la "carta" chiara che
+   rende leggibili gli altri blocchi: restava appoggiato sulla foto, dove un
+   segno sottile e un testo chiaro spariscono. Qui prende lo stesso foglio. */
+footer {
+  max-width: 680px;
+  margin: 3rem auto;
+  padding: 4rem 1.5rem 3.5rem;
+  background: rgba(248, 244, 237, .78);
+  border-radius: 8px;
+  border-top: none;
+  box-shadow: 0 2px 28px rgba(58, 46, 36, .10);
+}
+@media (max-width: 600px) {
+  footer { margin-left: 1rem; margin-right: 1rem; }
+}
+/* Telefono: i nomi si spezzano in tre righe con la & al centro, come nell'hero */
+@media (max-width: 430px) {
+  footer .footer-names {
+    display: flex; flex-direction: column; align-items: center;
+    line-height: 1.05;
+  }
+  footer .footer-names em {
+    padding: 0; margin: .08em 0; font-size: .66em; line-height: 1;
+  }
+}
+
 /* Movimento ridotto: il segno risulta gia' tracciato e i testi subito visibili */
 @media (prefers-reduced-motion: reduce) {
   .splash-linea path { stroke-dashoffset: 0; }
   .splash-punto { transform: scale(1); opacity: 1; }
+  .js .footer-linea path { stroke-dashoffset: 0; }
+  .js .footer-punto { transform: scale(1); opacity: 1; }
 }
 </style>
 <script>
@@ -1219,8 +1295,24 @@ section:not(.slideshow) {
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-names">Gianluca & Erika</div>
-  <p>26 Agosto 2027 — Napoli</p>
+  <p class="footer-intro">Vi aspettiamo</p>
+  <div class="footer-linea-wrap" aria-hidden="true">
+    <svg class="footer-linea" viewBox="0 0 1200 480" preserveAspectRatio="none" fill="none">
+      <defs>
+        <linearGradient id="linea-fusa-footer" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#5F6B58"/>
+          <stop offset=".45" stop-color="#8A6A50"/>
+          <stop offset="1" stop-color="#B5714F"/>
+        </linearGradient>
+      </defs>
+      <path class="l-verde"      d="M 0 32 C 200 60 230 350 517 360"      stroke="#5F6B58" stroke-width="2.6" stroke-linecap="round" pathLength="1"/>
+      <path class="l-terracotta" d="M 0 401 C 110 445 200 420 517 360"    stroke="#B5714F" stroke-width="2.6" stroke-linecap="round" pathLength="1"/>
+      <path class="l-fusa"       d="M 517 360 C 800 365 900 490 1200 458" stroke="url(#linea-fusa-footer)" stroke-width="2.6" stroke-linecap="round" pathLength="1"/>
+    </svg>
+    <span class="footer-punto"></span>
+  </div>
+  <div class="footer-names"><span>Gianluca</span> <em>&amp;</em> <span>Erika</span></div>
+  <p class="footer-date">26 Agosto 2027<span aria-hidden="true">·</span>Napoli</p>
 </footer>
 
 <!-- MUSICA DI SOTTOFONDO -->
@@ -1313,7 +1405,7 @@ const FOTO_GALLERIA = [
 (function() {
   const els = document.querySelectorAll(
     'section .section-label, section .section-title, section .section-text, .story-sign, .gallery-item,' +
-    '.map-card, .rsvp-inner, #foto > p, #foto > a, .flourish-section');
+    '.map-card, .rsvp-inner, #foto > p, #foto > a, .flourish-section, .footer-linea-wrap');
   if (!('IntersectionObserver' in window)) { els.forEach(el => el.classList.add('in')); return; }
   const io = new IntersectionObserver((entries) => {
     entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
