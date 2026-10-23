@@ -252,10 +252,10 @@ body::before {
 
 <div class="rsvp-page">
   <div class="section-label">Gianluca & Erika</div>
-  <h1 class="section-title">Conferma la tua presenza</h1>
-  <p class="section-text">26 Agosto 2027 — Napoli</p>
+  <h1 class="section-title" id="rsvp-titolo">Conferma la tua presenza</h1>
+  <p class="section-text" id="rsvp-sottotitolo">26 Agosto 2027 — Napoli</p>
 
-  <form class="rsvp-form" id="rsvp-form">
+  <form class="rsvp-form" id="rsvp-form" style="display:none;">
     <div class="rsvp-row">
       <div>
         <label>Nome</label>
@@ -298,13 +298,36 @@ body::before {
       <label>Intolleranze / allergie alimentari</label>
       <textarea name="note" placeholder="Segnala qui eventuali esigenze..."></textarea>
     </div>
-    <button type="submit" class="rsvp-btn">Invia</button>
+    <button type="submit" class="rsvp-btn" id="rsvp-submit">Invia</button>
+    <p id="rsvp-nota" style="margin-top:.4rem;font-size:.82rem;line-height:1.6;color:var(--text-soft);text-align:center;"></p>
   </form>
 
   <div class="rsvp-success" id="rsvp-success">
     <h3>Grazie!</h3>
     <p id="rsvp-success-text">La tua risposta è stata registrata.<br>Non vediamo l'ora di festeggiare insieme!</p>
     <a href="index.html">← Torna al sito</a>
+  </div>
+
+  <!-- Verifica in corso -->
+  <div id="rsvp-checking" style="padding:3rem 0;text-align:center;">
+    <p style="color:var(--text-soft);font-size:1.02rem;">Un istante, stiamo controllando il tuo invito…</p>
+  </div>
+
+  <!-- Messaggio per chi ha gia' risposto -->
+  <div id="rsvp-done" style="display:none;padding:3rem 0;text-align:center;">
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1rem;">
+      <circle cx="28" cy="28" r="22"/><path d="M19 28.5l6.5 6.5L37 23"/>
+    </svg>
+    <h3 style="font-family:var(--display);font-size:1.9rem;font-weight:400;color:var(--text);margin-bottom:.8rem;">Abbiamo già la tua risposta</h3>
+    <p id="rsvp-done-text" style="color:var(--text-soft);font-size:1.06rem;line-height:1.7;">
+      La tua risposta è stata registrata.
+    </p>
+    <p id="rsvp-done-help" style="color:var(--text-soft);font-size:.95rem;line-height:1.7;margin-top:1rem;">
+      Per correggerla usa il pulsante <strong>Modifica la risposta</strong> che trovi
+      nell'email di conferma che ti abbiamo inviato.<br>
+      Se non la vedi, controlla anche nello spam.
+    </p>
+    <a href="index.html" style="display:inline-block;margin-top:1.5rem;font-size:.8rem;color:var(--text-soft);text-decoration:none;letter-spacing:.06em;text-transform:uppercase;">← Torna al sito</a>
   </div>
 
   <!-- Messaggio per accessi non autorizzati -->
@@ -325,19 +348,39 @@ body::before {
 // ✏️ INCOLLA QUI L'URL DEL DEPLOY APPS SCRIPT
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3fZrpvNVoo4wNNishjT-HMC6FFHxmwB2rcIox9_eFEHkBp0T723ng_p5j5KUUhTmm/exec';
 
-// ── Controllo accesso: serve il parametro ?e= nell'URL ──
+// Data di scadenza mostrata se il server non risponde (deve coincidere con CONFIG.SCADENZA_RSVP)
+const SCADENZA_RSVP = '15 Luglio 2027';
+
+// Token di modifica (?t=) e stato dell'invitato, condivisi con l'invio
+let TOKEN = '';
+let IN_MODIFICA = false;
+
+// ── Controllo accesso ──────────────────────────────────────
+// 1. serve il link personalizzato (?e=)
+// 2. l'email deve essere in lista invitati
+// 3. chi ha già risposto rivede il modulo solo con il token (?t=) contenuto
+//    nell'email di conferma, e solo entro la scadenza. Il controllo è sul
+//    foglio Google: vale da qualunque dispositivo apra la posta.
 (function() {
   const params = new URLSearchParams(location.search);
   const email = params.get('e');
+  TOKEN = params.get('t') || '';
 
-  if (!email) {
-    // Nessun link personalizzato → blocca il form
-    document.getElementById('rsvp-form').style.display = 'none';
-    document.getElementById('rsvp-blocked').style.display = 'block';
-    return;
+  const form     = document.getElementById('rsvp-form');
+  const checking = document.getElementById('rsvp-checking');
+  const blocked  = document.getElementById('rsvp-blocked');
+  const done     = document.getElementById('rsvp-done');
+
+  function mostra(el) {
+    checking.style.display = 'none';
+    form.style.display    = el === form ? 'flex' : 'none';
+    blocked.style.display = el === blocked ? 'block' : 'none';
+    done.style.display    = el === done ? 'block' : 'none';
   }
 
-  // Pre-fill dai parametri URL
+  if (!email) { mostra(blocked); return; }
+
+  // Pre-fill dai parametri URL (sovrascritto dai dati del foglio, se disponibili)
   const fields = { n: 'nome', c: 'cognome', e: 'email' };
   for (const [param, name] of Object.entries(fields)) {
     const val = params.get(param);
@@ -346,7 +389,99 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3fZrpvNVoo4wNNishj
       if (input) { input.value = val; input.readOnly = param === 'e'; }
     }
   }
+
+  // Senza token: se risulta già risposto su questo browser, evitiamo l'attesa
+  if (!TOKEN && giaRispostoInLocale(email)) { mostraGiaRisposto(null); return; }
+
+  // Controllo sul foglio Google via JSONP (niente problemi di CORS)
+  const cb = 'rsvpStato' + Date.now();
+  const script = document.createElement('script');
+  let risolto = false;
+  const timeout = setTimeout(() => finisci(null), 10000);
+
+  function finisci(stato) {
+    if (risolto) return;
+    risolto = true;
+    clearTimeout(timeout);
+    delete window[cb];
+    script.remove();
+
+    if (!stato) { apriModulo(); return; }        // rete KO → si compila (il server rifiuta i doppioni)
+    if (!stato.autorizzato) { mostra(blocked); return; }
+
+    if (stato.risposto && !stato.modificabile) { segnaRisposto(email); mostraGiaRisposto(stato); return; }
+
+    if (stato.risposto && stato.modificabile) {
+      IN_MODIFICA = true;
+      riempiModulo(stato.dati);
+    }
+    apriModulo(stato);
+  }
+
+  function apriModulo(stato) {
+    const scadenza = (stato && stato.scadenza) || SCADENZA_RSVP;
+    if (IN_MODIFICA) {
+      document.getElementById('rsvp-titolo').textContent = 'Modifica la tua risposta';
+      document.getElementById('rsvp-sottotitolo').textContent = 'Correggi quello che serve e salva';
+      document.getElementById('rsvp-submit').textContent = 'Salva modifiche';
+      document.getElementById('rsvp-nota').innerHTML =
+        'Le modifiche sostituiscono la risposta precedente. Puoi correggerla fino al <strong>' + scadenza + '</strong>.';
+    } else {
+      document.getElementById('rsvp-nota').innerHTML =
+        'Dopo l\'invio riceverai un\'email di riepilogo: da lì potrai correggere la risposta fino al <strong>' + scadenza + '</strong>.';
+    }
+    mostra(form);
+  }
+
+  function riempiModulo(d) {
+    if (!d) return;
+    for (const [name, val] of Object.entries(d)) {
+      const input = document.querySelector(`[name="${name}"]`);
+      if (input && val !== null && val !== undefined && val !== '') input.value = val;
+    }
+    const email = document.querySelector('[name="email"]');
+    if (email) email.readOnly = true;
+    document.getElementById('partecipa').dispatchEvent(new Event('change'));
+  }
+
+  function mostraGiaRisposto(stato) {
+    if (stato && stato.partecipa) {
+      const esito = stato.partecipa === 'no'
+        ? 'Ci avevi fatto sapere che purtroppo non potrai esserci'
+        : 'Abbiamo registrato la tua presenza';
+      document.getElementById('rsvp-done-text').innerHTML =
+        esito + (stato.data ? ' il ' + stato.data : '') + '.';
+    }
+    // Scaduto il termine, l'unica strada è scrivere agli sposi
+    if (stato && stato.scaduto) {
+      const scadenza = stato.scadenza || SCADENZA_RSVP;
+      const contatto = stato.contatto || '';
+      document.getElementById('rsvp-done-help').innerHTML =
+        'Il termine per modificare la risposta (' + scadenza + ') è passato.' +
+        (contatto
+          ? '<br>Per qualsiasi correzione scrivici a <a href="mailto:' + contatto +
+            '?subject=' + encodeURIComponent('Correzione RSVP') +
+            '" style="color:var(--gold);">' + contatto + '</a>.'
+          : '');
+    }
+    mostra(done);
+  }
+
+  window[cb] = finisci;
+  script.onerror = () => finisci(null);
+  script.src = SCRIPT_URL + '?stato=1&callback=' + cb +
+    '&e=' + encodeURIComponent(email) + '&t=' + encodeURIComponent(TOKEN);
+  document.head.appendChild(script);
 })();
+
+// ── Memoria locale (serve solo a evitare un'attesa inutile) ──
+function chiaveRisposta(email) { return 'rsvp:' + email.toLowerCase().trim(); }
+function giaRispostoInLocale(email) {
+  try { return localStorage.getItem(chiaveRisposta(email)) === '1'; } catch (e) { return false; }
+}
+function segnaRisposto(email) {
+  try { localStorage.setItem(chiaveRisposta(email), '1'); } catch (e) {}
+}
 
 // ── Adulti/bambini servono solo se si partecipa ──
 (function() {
@@ -367,6 +502,7 @@ document.getElementById('rsvp-form').addEventListener('submit', async function(e
 
   const data = Object.fromEntries(new FormData(this));
   if (data.partecipa === 'no') { data.ospiti = 0; data.bambini = 0; }
+  if (TOKEN) data.token = TOKEN;
 
   try {
     await fetch(SCRIPT_URL, {
@@ -375,10 +511,21 @@ document.getElementById('rsvp-form').addEventListener('submit', async function(e
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(data),
     });
+    segnaRisposto(data.email || '');
     this.style.display = 'none';
-    if (data.partecipa === 'no') {
-      document.getElementById('rsvp-success-text').innerHTML =
-        'Ci dispiace che non potrai esserci.<br>Grazie per avercelo fatto sapere.';
+
+    const testo = document.getElementById('rsvp-success-text');
+    if (IN_MODIFICA) {
+      document.querySelector('.rsvp-success h3').textContent = 'Modifica salvata';
+      testo.innerHTML = 'La tua risposta è stata aggiornata.<br>' +
+        'Ti abbiamo inviato un\'email con il nuovo riepilogo.';
+    } else if (data.partecipa === 'no') {
+      testo.innerHTML = 'Ci dispiace che non potrai esserci.<br>' +
+        'Grazie per avercelo fatto sapere: ti abbiamo inviato un\'email di riepilogo.';
+    } else {
+      testo.innerHTML = 'La tua risposta è stata registrata.<br>' +
+        'Ti abbiamo inviato un\'email con il riepilogo e il link per modificarla.<br>' +
+        'Non vediamo l\'ora di festeggiare insieme!';
     }
     document.getElementById('rsvp-success').style.display = 'block';
   } catch (err) {
